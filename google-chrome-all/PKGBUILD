@@ -1,0 +1,184 @@
+pkgbase=google-chrome-all
+pkgname=('google-chrome' 'google-chrome-beta' 'google-chrome-dev' 'widevine')
+_pkgname='google-chrome'
+__pkgname='google-chrome-stable'
+___pkgname='google-chrome-beta'
+____pkgname='google-chrome-dev'
+_____pkgname='google-chrome-unstable'
+pkgver=123.0.6312.122
+_pkgver='124.0.6367.49'
+__pkgver='125.0.6396.3'
+___pkgver='4.10.2710.0'
+pkgrel=1
+pkgdesc="The popular web browser by Google (All Channels)"
+arch=('x86_64')
+url="https://www.google.com/chrome"
+license=('custom:chrome')
+groups=('network-web')
+depends=('gcc-libs' 'cairo' 'alsa-lib' 'gtk3' 'libcups' 'libpng' 'libxslt' 'freetype2' 'libxss' 'libxtst' 'nss' 'ttf-liberation' )
+optdepends=('pipewire: WebRTC desktop sharing under Wayland'
+			'kdialog: For file dialogs in KDE'
+			'kwallet6: For storing passwords in KWallet'
+			'xdg-utils: For handling custom flags inside HOME directory'
+			'kde-gtk-config: For GTK integration setting into KDE Plasma'
+			'widevine: Plugin for viewing/streaming premium proprietary video content')
+provides=("${_pkgname}-${pkgver}" "${__pkgname}-${pkgver}" "${___pkgname}-${_pkgver}" "${____pkgname}-${__pkgver}" "${_____pkgname}-${__pkgver}" 'libwidevinecdm.so' 'widevine')
+options=('!emptydirs' '!strip')
+source=("${_pkgname}-${pkgver}-${pkgrel}.x86_64.rpm::https://dl.google.com/linux/chrome/rpm/stable/x86_64/${__pkgname}-${pkgver}-${pkgrel}.x86_64.rpm"
+		"${___pkgname}-${_pkgver}-${pkgrel}.x86_64.rpm::https://dl.google.com/linux/chrome/rpm/stable/x86_64/${___pkgname}-${_pkgver}-${pkgrel}.x86_64.rpm"
+		"${____pkgname}-${__pkgver}-${pkgrel}.x86_64.rpm::https://dl.google.com/linux/chrome/rpm/stable/x86_64/${_____pkgname}-${__pkgver}-${pkgrel}.x86_64.rpm"
+		"Widevine-${___pkgver}.zip::https://dl.google.com/widevine-cdm/${___pkgver}-linux-x64.zip"
+		"Chrome-Online-Agreement--Chrome-Enterprise.pdf"
+		"Chrome-Service-License-Agreement--Chrome-Enterprise.pdf"
+		"Google-Chrome-and-ChromeOS-Additional-Terms-of-Service.pdf")
+sha512sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+package_google-chrome() {
+	pkgdesc="The popular web browser by Google (Stable Channel)"
+	provides=("${_pkgname}-${pkgver}" "${__pkgname}-${pkgver}")
+	options=('!emptydirs' '!strip')
+	install="${_pkgname}.install"
+
+	mkdir -p "${pkgdir}/"
+	bsdtar -xf "${srcdir}/${_pkgname}-${pkgver}-${pkgrel}.x86_64.rpm" -C "${pkgdir}/"
+
+	msg2 "Removing unnecessary file properties from the RPM binary package"
+	rm -fdrv "${pkgdir}/etc/"
+
+	msg2 "Installing thumbnails from SOURCE to the system"
+	for size in 16x16 32x32 48x48 128x128 256x256; do
+		install -Dm644 "${pkgdir}/opt/google/chrome/product_logo_${size/x*/}.png" \
+		"${pkgdir}/usr/share/icons/hicolor/${size}/apps/${_pkgname}.png"
+	done
+
+	install -d "${pkgdir}/usr/share/pixmaps/"
+	install -v -Dm644 "${pkgdir}/opt/google/chrome/product_logo_256.png" "${pkgdir}/usr/share/pixmaps/${_pkgname}.png"
+
+	msg2 "Copying Widevine shared library from SOURCE to the system"
+	install -d "${pkgdir}/usr/lib/chromium/"
+    install -d "${pkgdir}/usr/lib/qt6/plugins/ppapi/"
+
+#    cp -v -n --update -f "${pkgdir}/opt/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so" \ #
+#	   -t "${pkgdir}/usr/lib/chromium/" #
+#    cp -v -n --update -f "${pkgdir}/opt/google/chrome/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so" \ #
+#	   -t "${pkgdir}/usr/lib/qt6/plugins/ppapi/" #
+
+	sed -i \
+		-e "/Exec=/i\StartupWMClass=Google-chrome\nPath=/opt/google/chrome/" \
+		-e "s/x-scheme-handler\/ftp;\?//g" "${pkgdir}/usr/share/applications/google-chrome.desktop"
+
+	msg2 "Installing licenses from SOURCEs to the system"
+	install -v -Dm644 "${srcdir}/Chrome-Online-Agreement--Chrome-Enterprise.pdf" \
+					  "${pkgdir}/usr/share/licenses/${_pkgname}/Google-Chrome-EULA.pdf"
+	install -v -Dm644 "${srcdir}/Chrome-Service-License-Agreement--Chrome-Enterprise.pdf" \
+					  "${pkgdir}/usr/share/licenses/${_pkgname}/Google-Chrome-SERVICE-EULA.pdf"
+	install -v -Dm644 "${srcdir}/Google-Chrome-and-ChromeOS-Additional-Terms-of-Service.pdf" \
+					  "${pkgdir}/usr/share/licenses/${_pkgname}/Google-Chrome-EXTRA-EULA.pdf"
+
+	msg2 "Imposing sandboxing by modifying SUID properties"
+	chmod -v 4755 "${pkgdir}/opt/google/chrome/chrome-sandbox"
+}
+
+package_google-chrome-beta() {
+	pkgdesc="The popular web browser by Google (Beta Channel)"
+	provides=("${___pkgname}-${_pkgver}")
+	options=('!emptydirs' '!strip')
+	install="${___pkgname}.install"
+
+	mkdir -p "${pkgdir}/"
+	bsdtar -xf "${srcdir}/${___pkgname}-${_pkgver}-${pkgrel}.x86_64.rpm" -C "${pkgdir}/"
+
+	msg2 "Removing unnecessary file properties from the RPM binary package"
+	rm -fdrv "${pkgdir}/etc/"
+
+msg2 "Installing thumbnails from SOURCE to the system"
+	for size in 16x16 32x32 48x48 128x128 256x256; do
+		install -Dm644 "${pkgdir}/opt/google/chrome-beta/product_logo_${size/x*/}_beta.png" \
+		"${pkgdir}/usr/share/icons/hicolor/${size}/apps/${___pkgname}.png"
+	done
+
+	install -d "${pkgdir}/usr/share/pixmaps/"
+	install -v -Dm644 "${pkgdir}/opt/google/chrome-beta/product_logo_256_beta.png" "${pkgdir}/usr/share/pixmaps/${___pkgname}.png"
+
+	msg2 "Copying Widevine shared library from SOURCE to the system"
+	install -d "${pkgdir}/usr/lib/chromium/"
+    install -d "${pkgdir}/usr/lib/qt6/plugins/ppapi/"
+
+#    cp -v -n --update -f "${pkgdir}/opt/google/chrome-beta/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so" \ #
+#	   -t "${pkgdir}/usr/lib/chromium/" #
+#    cp -v -n --update -f "${pkgdir}/opt/google/chrome-beta/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so" \ #
+#	   -t "${pkgdir}/usr/lib/qt6/plugins/ppapi/" #
+
+	sed -i \
+		-e "/Exec=/i\StartupWMClass=Google-chrome\nPath=/opt/google/chrome-beta/" \
+		-e "s/x-scheme-handler\/ftp;\?//g" "${pkgdir}/usr/share/applications/${___pkgname}.desktop"
+
+	msg2 "Installing licenses from SOURCEs to the system"
+	install -v -Dm644 "${srcdir}/Chrome-Online-Agreement--Chrome-Enterprise.pdf" \
+					  "${pkgdir}/usr/share/licenses/${_pkgname}/Google-Chrome-EULA--Beta.pdf"
+	install -v -Dm644 "${srcdir}/Chrome-Service-License-Agreement--Chrome-Enterprise.pdf" \
+					  "${pkgdir}/usr/share/licenses/${_pkgname}/Google-Chrome-SERVICE-EULA--Beta.pdf"
+	install -v -Dm644 "${srcdir}/Google-Chrome-and-ChromeOS-Additional-Terms-of-Service.pdf" \
+					  "${pkgdir}/usr/share/licenses/${_pkgname}/Google-Chrome-EXTRA-EULA--Beta.pdf"
+
+	msg2 "Imposing sandboxing by modifying SUID properties"
+	chmod -v 4755 "${pkgdir}/opt/google/chrome-beta/chrome-sandbox"
+}
+
+package_google-chrome-dev() {
+	pkgdesc="The popular web browser by Google (Unstable Channel)"
+	provides=("${____pkgname}-${__pkgver}" "${_____pkgname}-${__pkgver}")
+	options=('!emptydirs' '!strip')
+	install="${____pkgname}.install"
+
+	mkdir -p "${pkgdir}/"
+	bsdtar -xf "${srcdir}/${____pkgname}-${__pkgver}-${pkgrel}.x86_64.rpm" -C "${pkgdir}/"
+
+	msg2 "Removing unnecessary file properties from the RPM binary package"
+	rm -fdrv "${pkgdir}/etc/"
+
+	msg2 "Installing thumbnails from SOURCE to the system"
+	for size in 16x16 32x32 48x48 128x128 256x256; do
+		install -Dm644 "${pkgdir}/opt/google/chrome-unstable/product_logo_${size/x*/}_dev.png" \
+		"${pkgdir}/usr/share/icons/hicolor/${size}/apps/${____pkgname}.png"
+	done
+
+	install -d "${pkgdir}/usr/share/pixmaps/"
+	install -v -Dm644 "${pkgdir}/opt/google/chrome-unstable/product_logo_256_dev.png" "${pkgdir}/usr/share/pixmaps/${____pkgname}.png"
+
+	msg2 "Copying Widevine shared library from SOURCE to the system"
+	install -d "${pkgdir}/usr/lib/chromium/"
+    install -d "${pkgdir}/usr/lib/qt6/plugins/ppapi/"
+
+#   cp -v -n --update -f "${pkgdir}/opt/google/chrome-unstable/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so" \ #
+#	   -t "${pkgdir}/usr/lib/chromium/" #
+#    cp -v -n --update -f "${pkgdir}/opt/google/chrome-unstable/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so" \ #
+#	   -t "${pkgdir}/usr/lib/qt6/plugins/ppapi/" #
+
+	sed -i \
+		-e "/Exec=/i\StartupWMClass=Google-chrome\nPath=/opt/google/chrome-unstable/" \
+		-e "s/x-scheme-handler\/ftp;\?//g" "${pkgdir}/usr/share/applications/${_____pkgname}.desktop"
+
+	msg2 "Installing licenses from SOURCEs to the system"
+	install -v -Dm644 "${srcdir}/Chrome-Online-Agreement--Chrome-Enterprise.pdf" \
+					  "${pkgdir}/usr/share/licenses/${_pkgname}/Google-Chrome-EULA--Dev.pdf"
+	install -v -Dm644 "${srcdir}/Chrome-Service-License-Agreement--Chrome-Enterprise.pdf" \
+					  "${pkgdir}/usr/share/licenses/${_pkgname}/Google-Chrome-SERVICE-EULA--Dev.pdf"
+	install -v -Dm644 "${srcdir}/Google-Chrome-and-ChromeOS-Additional-Terms-of-Service.pdf" \
+					  "${pkgdir}/usr/share/licenses/${_pkgname}/Google-Chrome-EXTRA-EULA--Dev.pdf"
+
+	msg2 "Imposing sandboxing by modifying SUID properties"
+	chmod -v 4755 "${pkgdir}/opt/google/chrome-unstable/chrome-sandbox"
+}
+
+package_widevine() {
+    pkgdesc="Google Chrome's plugin for viewing/streaming premium proprietary video content; usable on other Chromium-based web browsers"
+    depends=('pulseaudio')
+
+	mkdir -p "${pkgdir}/"
+    bsdtar -xf "${srcdir}/Widevine-${___pkgver}.zip" -C "${pkgdir}/"
+
+	install -D "${pkgdir}/libwidevinecdm.so" -t "${pkgdir}/usr/lib/chromium/"
+	install -D "${pkgdir}/manifest.json" -t "${pkgdir}/usr/lib/chromium/"
+	install -D "${pkgdir}/LICENSE.txt" -t "${pkgdir}/usr/share/licenses/${_pkgname}/"
+}

@@ -1,0 +1,21 @@
+pkgbase = bitwarden
+	pkgdesc = Open source password management solutions for individuals, teams, and business organizations.
+	pkgver = 2024.4.1
+	pkgrel = 1
+	url = https://bitwarden.com/
+	arch = x86_64
+	license = custom
+	license = GPL-3
+	depends = libnotify
+	depends = libsecret
+	depends = libxtst
+	depends = libxss
+	depends = nss
+	options = !strip
+	options = !emptydirs
+	source = bitwarden-2024.4.1.rpm::https://github.com/bitwarden/clients/releases/download/desktop-v2024.4.1/Bitwarden-2024.4.1-x86_64.rpm
+	source = https://github.com/bitwarden/clients/releases/download/desktop-v2024.4.1/latest-linux.yml
+	sha512sums = SKIP
+	sha512sums = SKIP
+
+pkgname = bitwarden

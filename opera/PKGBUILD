@@ -1,0 +1,41 @@
+pkgname=opera
+_pkgname=opera-stable
+pkgver=109.0.5097.45
+pkgrel=1
+pkgdesc="A browser that combines a minimal design with sophisticated technology to make the web faster, safer, and easier"
+arch=('x86_64')
+url="https://www.opera.com/"
+license=('custom')
+depends=('qt5-base' 'qt6-base' 'gtk3' 'libcups' 'nss' 'alsa-lib' 'libxtst' 'libdrm' 'libnotify' 'libxss' 'mesa'
+		 'desktop-file-utils' 'shared-mime-info' 'hicolor-icon-theme')
+makedepends=('imagemagick')
+optdepends=('pipewire' 'kdialog' 'kwallet' 'ttf-liberation' 'xdg-utils')
+options=('!strip' '!emptydirs')
+install="${pkgname}.install"
+source=("${_pkgname}_${pkgver}_amd64.rpm::https://download3.operacdn.com/ftp/pub/${pkgname}/desktop/${pkgver}/linux/${pkgname}-stable_${pkgver}_amd64.rpm")
+sha256sums=('SKIP')
+
+package() {
+	msg2 "Unpacking SOURCE files of the downloaded RMP binary package"
+	mkdir -p "${pkgdir}/"
+	bsdtar -xf "${srcdir}/${_pkgname}_${pkgver}_amd64.rpm" -C "${pkgdir}/"
+
+	msg2 "Removing unnecessary file properties from the RPM binary package"
+	rm -drf "${pkgdir}/usr/lib/" "${pkgdir}/usr/lib64/setup_repo.sh" "${pkgdir}/usr/bin/opera"
+
+	install -d "${pkgdir}/opt/Opera/"
+	mv -f ${pkgdir}/usr/lib64/${pkgname}/* "${pkgdir}/opt/Opera/"
+
+	msg2 "Re-Linking binaries from SOURCE to the system"
+	ln -v -s -f "/opt/Opera/${pkgname}" --target-directory="${pkgdir}/usr/bin/"
+
+	sed -i \
+		-e "/TryExec=/i\StartupWMClass=Opera\nPath=/opt/Opera/" \
+		-e "s/x-scheme-handler\/ftp;\?//g" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
+
+	msg2 "Imposing sandboxing by modifying SUID properties"
+	chmod 4755 -v "${pkgdir}/opt/Opera/${pkgname}_sandbox"
+
+	msg2 "ALL DONE"
+}
+

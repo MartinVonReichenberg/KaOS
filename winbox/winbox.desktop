@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Winbox
+GenericName=Mikrotik Management Program
+Comment=Winbox is a small utility that allows the administration of MikroTik RouterOS using a fast and simple GUI.
+Icon=winbox
+Exec=/usr/bin/winbox
+Path=/usr/share/winbox/
+Terminal=false
+Categories=Network; Utility
+Keywords=Hex; LAN; Cable; Network; Manager; Administration; Firewall; DNS; DHCP; IP; UPnP; NAT; NTP; MAC; WiFi; RouterOS; GUI
+StartupNotify=false
+StartupWMClass=winbox.exe

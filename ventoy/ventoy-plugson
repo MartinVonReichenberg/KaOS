@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd "/opt/Ventoy/" || exit 1
+exec "./VentoyPlugson.sh" "$@"

@@ -1,0 +1,19 @@
+pkgname=tree
+_pkgname=unix-tree
+pkgver=2.1.1
+pkgrel=1
+pkgdesc="A directory listing program displaying a depth indented list of files"
+arch=('x86_64')
+url="https://gitlab.com/OldManProgrammer/unix-tree"
+license=('GPL')
+depends=('glibc' 'gcc-libs')
+source=("${pkgname}-${pkgver}.tar.gz::https://gitlab.com/OldManProgrammer/unix-tree/-/archive/${pkgver}/${_pkgname}-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  make -C "${srcdir}/${_pkgname}-${pkgver}/"
+}
+
+package() {
+  make -C "${srcdir}/${_pkgname}-${pkgver}/" DESTDIR="${pkgdir}/usr/bin/" MANDIR="${pkgdir}/usr/share/man/" install
+}

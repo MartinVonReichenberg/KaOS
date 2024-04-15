@@ -1,0 +1,7 @@
+#!/bin/bash
+export WINEPREFIX="$HOME/.wine"
+export WINEARCH="win64"
+export WINEDLLOVERRIDES="mscoree" # disable mono
+export WINEDEBUG="-all"
+
+wine64 "/usr/share/winbox/winbox.exe" "$@"

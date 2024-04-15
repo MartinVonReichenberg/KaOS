@@ -1,0 +1,78 @@
+pkgname=firefox
+pkgdesc='Standalone web browser from mozilla.org'
+url='https://www.mozilla.org/en-US/firefox/'
+pkgver=124.0.2
+# Check nss version in build repo
+_nssver=3.99
+pkgrel=1
+arch=('x86_64')
+license=('MPL' 'GPL' 'LGPL')
+groups=('network-web')
+install=firefox.install
+depends=('desktop-file-utils' 'libxt' 'mailcap' "nss>=${_nssver}" 'shared-mime-info' 'gtk3' 'kde-gtk-config'
+         'networkmanager' 'gst-plugins-good' 'gst-plugins-bad' 'gst-libav' 'startup-notification'
+         'dbus-glib' 'alsa-lib' 'hicolor-icon-theme' 'libevent' 'pulseaudio' 'libjpeg-turbo' 'libvpx' 'icu')
+makedepends=('unzip' 'zip' 'diffutils' 'python3' 'yasm' 'mesa' 'imake' 'xorg-server' 
+             'inetutils' 'rust' 'clang' 'nodejs' 'cbindgen' 'nasm' 'sqlite')
+options=('!emptydirs' '!makeflags')
+source=("https://ftp.mozilla.org/pub/firefox/releases/${pkgver}/source/${pkgname}-${pkgver}.source.tar.xz"
+#        'firefox-install-dir.patch' #
+#        'stylo.patch' #
+        'mozconfig'
+        'firefox.desktop'
+        'vendor.js'
+        )
+sha256sums=('SKIP'
+            #'SKIP'#
+            #'SKIP'#
+            'SKIP'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+  # run prior to building:
+  export LC_ALL="en_US.UTF-8"
+
+  cp -v -f "${srcdir}/mozconfig" -t "${srcdir}/${pkgname}-${pkgver}/"
+#  patch -p1 -i "${srcdir}/firefox-install-dir.patch"
+#  patch -p1 -i "${srcdir}/stylo.patch" #
+
+  mkdir -p "${srcdir}/mozbuild"
+
+  sed -e "s|psutil>=5.4.2,<=5.9.4|psutil>=5.4.2,<=5.9.9|" -i "./python/sites/mach.txt"
+}
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  export MOZBUILD_STATE_PATH="${srcdir}/mozbuild"
+  export MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE="system"
+  unset CPPFLAGS
+
+  #make -f client.mk build # MOZ_PGO=0
+  # https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/mach
+  ./mach builds
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  #make -f client.mk DESTDIR=${pkgdir} INSTALL_SDK= install
+  DESTDIR=${pkgdir} ./mach install
+
+  install -Dm644 "../vendor.js" -t "${pkgdir}/usr/lib/firefox/browser/defaults/preferences/"
+
+  for i in 16 22 24 32 48 256; do
+      install -Dm644 "./browser/branding/official/default$i.png" \
+                     "${pkgdir}/usr/share/icons/hicolor/${i}x${i}/apps/firefox.png"
+  done
+
+  install -Dm644 "./browser/branding/official/PrivateBrowsing_150.png" \
+                 "${pkgdir}/usr/share/icons/hicolor/150x150/apps/firefox-private.png"
+  install -Dm644 "./browser/branding/official/PrivateBrowsing_70.png" \
+                 "${pkgdir}/usr/share/icons/hicolor/72x72/apps/firefox-private.png"
+  install -Dm644 "../firefox.desktop" -t "${pkgdir}/usr/share/applications/"
+
+  ln -v -sf "/usr/lib/firefox/firefox" -t "${pkgdir}/usr/bin/"
+}

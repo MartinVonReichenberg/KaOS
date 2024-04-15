@@ -1,0 +1,36 @@
+pkgname=scrcpy
+pkgver=2.4
+pkgrel=1
+pkgdesc='Display and control your Android device'
+arch=('x86_64')
+url='https://github.com/Genymobile/scrcpy'
+license=('Apache')
+  msg2 "This package requires *android-tools* as dependency, can be obtained using *kcp -i android-tools*"
+depends=('android-tools' 'ffmpeg' 'sdl2')
+makedepends=('meson')
+optdepends=('android-udev-rules: For a rootless access of MTP devices')
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/Genymobile/scrcpy/archive/refs/tags/v${pkgver}.tar.gz"
+        "${pkgname}-server-${pkgver}.apk::https://github.com/Genymobile/scrcpy/releases/download/v${pkgver}/${pkgname}-server-v${pkgver}")
+b2sums=('SKIP' 'SKIP')
+
+prepare() {
+mkdir -p "${srcdir}/build/"
+}
+
+build() {
+
+  meson setup "${srcdir}/build/" "${pkgname}-${pkgver}" \
+    --buildtype release \
+    -D b_lto=true \
+    -D b_ndebug=true \
+    -D prebuilt_server="../${pkgname}-server-${pkgver}.apk"
+  ninja -C "${srcdir}/build/"
+}
+
+package() {
+  DESTDIR="${pkgdir}" ninja -C "${srcdir}/build/" install
+  install -Dm644 "${srcdir}/${pkgname}-${pkgver}/LICENSE" -t "${pkgdir}/usr/share/licenses/${pkgname}"
+
+    msg2 "The package throws error when trying to install the Manual; omniting it from the build process then:"
+    rm -fdrv "${pkgdir}/usr/local/share/man/"
+}

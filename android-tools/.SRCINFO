@@ -1,0 +1,24 @@
+pkgbase = android-tools
+	pkgdesc = Android SDK platform tools
+	pkgver = 34.0.5
+	pkgrel = 1
+	url = http://tools.android.com/
+	arch = x86_64
+	license = Apache
+	license = MIT
+	makedepends = cmake
+	makedepends = ninja
+	makedepends = go
+	makedepends = googletest
+	depends = libusb
+	depends = protobuf
+	depends = brotli
+	depends = zstd
+	depends = pcre2
+	optdepends = android-udev-rules
+	provides = adb
+	provides = fastboot
+	source = android-tools-34.0.5.tar.xz::https://github.com/nmeum/android-tools/releases/download/34.0.5/android-tools-34.0.5.tar.xz
+	sha256sums = SKIP
+
+pkgname = android-tools

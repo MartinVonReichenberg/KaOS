@@ -1,0 +1,36 @@
+pkgname=android-tools
+pkgver=34.0.5
+pkgrel=1
+pkgdesc='Android SDK platform tools'
+arch=('x86_64')
+url='http://tools.android.com/'
+license=('Apache' 'MIT')
+depends=('libusb' 'protobuf' 'brotli' 'zstd' 'pcre2')
+makedepends=('cmake' 'ninja' 'go' 'googletest')
+optdepends=('android-udev-rules')
+provides=('adb' 'fastboot')
+source=("${pkgname}-${pkgver}.tar.xz::https://github.com/nmeum/${pkgname}/releases/download/${pkgver}/${pkgname}-${pkgver}.tar.xz")
+sha256sums=('SKIP')
+
+prepare() {
+  mkdir -p "${srcdir}/${pkgname}-${pkgver}/build/"
+}
+
+build() {
+  cmake \
+    -DCMAKE_INSTALL_PREFIX=/usr/ \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+    -DCMAKE_C_FLAGS="$CFLAGS" \
+    -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
+    -Dprotobuf_MODULE_COMPATIBLE=ON \
+    -G Ninja -S "${srcdir}/${pkgname}-${pkgver}/" -B "${srcdir}/${pkgname}-${pkgver}/build/"
+}
+
+package() {
+  DESTDIR="${pkgdir}/" ninja -C "${srcdir}/${pkgname}-${pkgver}/build/" install
+
+                        msg2 "This package might need *android-udev-rules* as dependency, can be obtained using *kcp -i android-udev-rules*"
+
+                        msg2 "This package is a dependency for *scrcpy*"
+}

@@ -1,0 +1,21 @@
+pkgbase = winbox
+	pkgdesc = Winbox is an utility that allows the administration of MikroTik RouterOS usings GUI. (Wine)
+	pkgver = 3.40
+	pkgrel = 1
+	url = https://mikrotik.com
+	install = winbox.install
+	arch = x86_64
+	license = custom
+	makedepends = coreutils
+	depends = wine
+	optdepends = ttf-ms-fonts: for better fonts
+	source = winbox-3.40.exe::https://download.mikrotik.com/winbox/3.40/winbox64.exe
+	source = winbox.desktop
+	source = winbox.png
+	source = winbox
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = winbox
